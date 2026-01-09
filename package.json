@@ -13,7 +13,7 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
-    "@cmf/pi-subagent": "file:../pi-subagent-infrastructure"
+    "@cmf/pi-subagent": "file:../pi-subagent"
   },
   "peerDependencies": {
     "@mariozechner/pi-ai": ">=0.38.0",
