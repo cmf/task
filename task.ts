@@ -856,12 +856,12 @@ async function mergeDoneTaskWorkspace(
 	name: string,
 	wsPath: string
 ): Promise<boolean> {
-	// Get the change ID from the task workspace (the actual work commit)
+	// Get the change ID from the task workspace (the actual work commit in the working copy)
 	const changeIdResult = await pi.exec("jj", [
 		"log",
 		"-R", wsPath,
 		"--ignore-working-copy",
-		"-r", "@-",
+		"-r", "@",
 		"-T", "change_id",
 		"--no-graph",
 	]);
@@ -934,7 +934,7 @@ async function workspaceHasUnmergedCommits(
 	wsPath: string,
 	mainCommitId: string
 ): Promise<boolean> {
-	const revset = `@- & ~ancestors(${mainCommitId})`;
+	const revset = `@ & ~ancestors(${mainCommitId})`;
 	const result = await pi.exec("jj", [
 		"log",
 		"-R",
@@ -1027,7 +1027,7 @@ function parseTkQueryIds(output: string): string[] {
 				const parsed = JSON.parse(line) as { id?: string };
 				return typeof parsed.id === "string" ? parsed.id : "";
 			} catch {
-				const match = line.match(/\b(tp-[a-z0-9]+)\b/);
+				const match = line.match(/\b([a-z]+-[a-z0-9]+)\b/);
 				return match ? match[1] : "";
 			}
 		})
@@ -1035,7 +1035,7 @@ function parseTkQueryIds(output: string): string[] {
 }
 
 function parseTicketIdFromReadyLine(line: string): string {
-	const match = line.match(/\b(tp-[a-z0-9]+)\b/);
+	const match = line.match(/\b([a-z]+-[a-z0-9]+)\b/);
 	return match ? match[1] : "";
 }
 
@@ -1145,6 +1145,13 @@ async function selectAndStartTask(
 	if (wsAddResult.code !== 0) {
 		ctx.ui.notify(`Failed to create workspace: ${wsAddResult.stderr}`, "error");
 		return;
+	}
+
+	// Symlink .reference directory if it exists in the original repo
+	const referenceDir = path.join(root, ".reference");
+	if (fs.existsSync(referenceDir)) {
+		const wsReferenceLink = path.join(wsPath, ".reference");
+		fs.symlinkSync(referenceDir, wsReferenceLink);
 	}
 
 	// Set the ticket to in_progress in the task workspace
