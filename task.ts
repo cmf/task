@@ -1134,11 +1134,12 @@ async function selectAndStartTask(
 	// Create parent directory
 	fs.mkdirSync(path.dirname(wsPath), { recursive: true });
 
-	// Create jj workspace from the current main commit
+	// Create jj workspace from the current working copy commit
+	// (using @ instead of @- so that newly created tickets are included)
 	const wsAddResult = await pi.exec("jj", [
 		"workspace", "add",
 		"--name", taskId,
-		"-r", "@-",
+		"-r", "@",
 		wsPath,
 	]);
 
