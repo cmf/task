@@ -1148,11 +1148,15 @@ async function selectAndStartTask(
 		return;
 	}
 
-	// Symlink .reference directory if it exists in the original repo
+	// Symlink .reference directory if it exists in the main workspace
 	const referenceDir = path.join(root, ".reference");
 	if (fs.existsSync(referenceDir)) {
-		const wsReferenceLink = path.join(wsPath, ".reference");
-		fs.symlinkSync(referenceDir, wsReferenceLink);
+		const targetLink = path.join(wsPath, ".reference");
+		try {
+			fs.symlinkSync(referenceDir, targetLink);
+		} catch (err) {
+			ctx.ui.notify(`Warning: Failed to symlink .reference: ${err}`, "warning");
+		}
 	}
 
 	// Set the ticket to in_progress in the task workspace
