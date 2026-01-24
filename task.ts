@@ -939,6 +939,7 @@ async function workspaceHasUnmergedCommits(
 		"log",
 		"-R",
 		wsPath,
+		"--ignore-working-copy",
 		"-r",
 		revset,
 		"-T",
